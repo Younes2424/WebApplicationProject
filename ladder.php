@@ -3,7 +3,7 @@
     header("Cache-Control: no-cache");
     header("Expires: -1");
     require_once("conn.php");
-    $tableName = 'teams';
+    $tableName = 'teams'; // Table name
     $ladder = array();
     $week = $_SESSION["weekNo"];
     $sql = "SET @row_num=0";
@@ -16,9 +16,9 @@
     $results = $dbConn->query($sql)
     or die ('Problem with query: ' . $dbConn->error);
     array_push($ladder, array(
-        'name' => $tableName,
-        'fields' => $results->fetch_fields(),
-        'data' => $results
+        'name' => $tableName, // Table name
+        'fields' => $results->fetch_fields(), // Column headings
+        'data' => $results // Actual Data
     ));
 
     $lastFive = "SELECT homeTeam AS id, teamName, matchDate, (score1 - score2) AS difference FROM fixtures, teams
@@ -31,6 +31,14 @@
     // connection with an appropriate message
     $lastFiveMatches = $dbConn->query($lastFive)
     or die ('Problem with query: ' . $dbConn->error);
+
+    // function getTeamName($rank) {
+    //     while ($position = $results->fetch_assoc()) {
+    //         if ($rank === intval($position["#"])) {
+    //             return $position["Club"];
+    //         }
+    //     }
+    // }
 ?>
 
 <!DOCTYPE html>
@@ -57,38 +65,47 @@
       </nav>
     </header>
 
+    <!-- Actually useless but hard to get rid of; this is for printing multiple table; in this case you have only one table. -->
     <?php foreach ($ladder as $table): ?>
         <table>
+            <!-- This (tr) is only the first row of the table; the headings. -->
             <tr>
                 <?php
+                    // Prints each heading of the table adding a column with its name to the table
                     foreach($table['fields'] as $field) {
+                        // If the field name is "emblem", name the heading as Club
                         if ($field->name === "emblem") {
                             echo "<th>Club</th>";
-                        }
+                        } // Else if the name of the field is "Club", leave the heading empty to merge the logo with team name
                         elseif ($field->name === "Club") {
-                            echo "<th></th>";
-                        }
+                            echo "<th></th>"; // So the logo and team name appear as one column
+                        } // Else print the rest of the headings as they are
                         else {
                             echo "<th>" . $field->name . "</th>";
                         }
                     }
                 ?>
+                <!-- After all the columns have been added, add the last five column at the end. -->
                 <th>Last Five</th>
             </tr>
             <?php
-                $pattern = "/^[a-zA-Z0-9]*(.png)$/";
+                $pattern = "/^[a-zA-Z0-9]*(.png)$/"; // Regular expression for emblems' file names
+                // An array of regular expressions for team names
                 $teamsPatterns = array("/^(Adelaide United)$/", "/^(Brisbane Roar)$/", "/^(Central Coast Mariners)$/",
                                        "/^(Macarthur FC)$/", "/^(Melbourne City)$/", "/^(Melbourne Victory)$/",
                                        "/^(Newcastle Jets)$/", "/^(Perth Glory)$/", "/^(Sydney FC)$/",
                                        "/^(Wellington Phoenix)$/", "/^(Western Sydney Wanderers)$/", "/^(Western United FC)$/");
             ?>
+            <!-- After printing table headings (or adding columns), fill the table with its data -->
             <?php while($row = $table['data']->fetch_assoc()): ?>
                 <tr>
                     <?php
-                        foreach($row as $key => $value) {
+                        // output the value of each key; the data
+                        foreach($row as $value) {
+                            // If the value matches to the regular expression of the emblem's file name, add emblem's image
                             if (preg_match($pattern, $value)) {
                                 echo "<td><img src='images/" . $value . "' alt='Team Logo' width='25'></td>";
-                            }
+                            } // else add the value (string) itself to the table
                             else {
                                 echo "<td>" . $value . "</td>";
                             }
