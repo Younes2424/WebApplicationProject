@@ -71,7 +71,6 @@
             </tr>
             <?php
                 $pattern = "/^[a-zA-Z0-9]*(.png)$/"; // Regular expression for emblems' file names
-                $teamIdPatterns = "/^[1-9]$|^((1)+[0-2])$/"; // Regular expression for teamIDs
             ?>
             <!-- After printing table headings (or adding columns), fill the table with its data -->
             <?php while(($row = $results->fetch_assoc())): ?>
