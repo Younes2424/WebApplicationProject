@@ -20,25 +20,6 @@
         'fields' => $results->fetch_fields(), // Column headings
         'data' => $results // Actual Data
     ));
-
-    // $lastFive = "SELECT homeTeam AS id, teamName, matchDate, (score1 - score2) AS difference FROM fixtures, teams
-    //              WHERE (score1 IS NOT NULL) AND (score2 IS NOT NULL) AND (homeTeam = teamID)
-    //              UNION ALL
-    //              SELECT awayTeam AS id, teamName, matchDate, (score2 - score1) AS difference FROM fixtures, teams
-    //              WHERE (score1 IS NOT NULL) AND (score2 IS NOT NULL) AND (awayTeam = teamID)
-    //              ORDER BY id, matchDate DESC";
-    // // Save the result of the SQL query or terminate database
-    // // connection with an appropriate message
-    // $lastFiveMatches = $dbConn->query($lastFive)
-    // or die ('Problem with query: ' . $dbConn->error);
-
-    // function getTeamName($rank) {
-    //     while ($position = $results->fetch_assoc()) {
-    //         if ($rank === intval($position["#"])) {
-    //             return $position["Club"];
-    //         }
-    //     }
-    // }
 ?>
 
 <!DOCTYPE html>
@@ -80,6 +61,8 @@
                         elseif ($field->name === "Club") {
                             echo "<th></th>"; // So the logo and team name appear as one column
                         } // Else print the rest of the headings as they are
+                        elseif ($field->name === "teamID") {
+                        }
                         else {
                             echo "<th>" . $field->name . "</th>";
                         }
@@ -90,11 +73,6 @@
             </tr>
             <?php
                 $pattern = "/^[a-zA-Z0-9]*(.png)$/"; // Regular expression for emblems' file names
-                // An array of regular expressions for team names
-                // $teamsPatterns = array("/^(Adelaide United)$/", "/^(Brisbane Roar)$/", "/^(Central Coast Mariners)$/",
-                //                        "/^(Macarthur FC)$/", "/^(Melbourne City)$/", "/^(Melbourne Victory)$/",
-                //                        "/^(Newcastle Jets)$/", "/^(Perth Glory)$/", "/^(Sydney FC)$/",
-                //                        "/^(Wellington Phoenix)$/", "/^(Western Sydney Wanderers)$/", "/^(Western United FC)$/");
             ?>
             <!-- After printing table headings (or adding columns), fill the table with its data -->
             <?php while(($row = $results->fetch_assoc())): ?>
