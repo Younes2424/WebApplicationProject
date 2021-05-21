@@ -9,7 +9,7 @@
     $sql = "SET @row_num=0";
     $results = $dbConn->query($sql)
     or die ('Problem with query: ' . $dbConn->error);
-    $sql = "SELECT (@row_num:=@row_num+1) '#', emblem, teamName 'Club',
+    $sql = "SELECT teamID, (@row_num:=@row_num+1) '#', emblem, teamName 'Club',
             played 'P', won 'W', drawn 'D', lost 'L', goalsFor 'GF', goalsAgainst 'GA',
             goalDiff 'GD', points AS 'Pts'";
     $sql = $sql . "FROM teams ORDER BY points DESC, goalDiff DESC";
@@ -21,16 +21,16 @@
         'data' => $results // Actual Data
     ));
 
-    $lastFive = "SELECT homeTeam AS id, teamName, matchDate, (score1 - score2) AS difference FROM fixtures, teams
-                 WHERE (score1 IS NOT NULL) AND (score2 IS NOT NULL) AND (homeTeam = teamID)
-                 UNION ALL
-                 SELECT awayTeam AS id, teamName, matchDate, (score2 - score1) AS difference FROM fixtures, teams
-                 WHERE (score1 IS NOT NULL) AND (score2 IS NOT NULL) AND (awayTeam = teamID)
-                 ORDER BY id, matchDate DESC";
-    // Save the result of the SQL query or terminate database
-    // connection with an appropriate message
-    $lastFiveMatches = $dbConn->query($lastFive)
-    or die ('Problem with query: ' . $dbConn->error);
+    // $lastFive = "SELECT homeTeam AS id, teamName, matchDate, (score1 - score2) AS difference FROM fixtures, teams
+    //              WHERE (score1 IS NOT NULL) AND (score2 IS NOT NULL) AND (homeTeam = teamID)
+    //              UNION ALL
+    //              SELECT awayTeam AS id, teamName, matchDate, (score2 - score1) AS difference FROM fixtures, teams
+    //              WHERE (score1 IS NOT NULL) AND (score2 IS NOT NULL) AND (awayTeam = teamID)
+    //              ORDER BY id, matchDate DESC";
+    // // Save the result of the SQL query or terminate database
+    // // connection with an appropriate message
+    // $lastFiveMatches = $dbConn->query($lastFive)
+    // or die ('Problem with query: ' . $dbConn->error);
 
     // function getTeamName($rank) {
     //     while ($position = $results->fetch_assoc()) {
@@ -91,13 +91,13 @@
             <?php
                 $pattern = "/^[a-zA-Z0-9]*(.png)$/"; // Regular expression for emblems' file names
                 // An array of regular expressions for team names
-                $teamsPatterns = array("/^(Adelaide United)$/", "/^(Brisbane Roar)$/", "/^(Central Coast Mariners)$/",
-                                       "/^(Macarthur FC)$/", "/^(Melbourne City)$/", "/^(Melbourne Victory)$/",
-                                       "/^(Newcastle Jets)$/", "/^(Perth Glory)$/", "/^(Sydney FC)$/",
-                                       "/^(Wellington Phoenix)$/", "/^(Western Sydney Wanderers)$/", "/^(Western United FC)$/");
+                // $teamsPatterns = array("/^(Adelaide United)$/", "/^(Brisbane Roar)$/", "/^(Central Coast Mariners)$/",
+                //                        "/^(Macarthur FC)$/", "/^(Melbourne City)$/", "/^(Melbourne Victory)$/",
+                //                        "/^(Newcastle Jets)$/", "/^(Perth Glory)$/", "/^(Sydney FC)$/",
+                //                        "/^(Wellington Phoenix)$/", "/^(Western Sydney Wanderers)$/", "/^(Western United FC)$/");
             ?>
             <!-- After printing table headings (or adding columns), fill the table with its data -->
-            <?php while($row = $table['data']->fetch_assoc()): ?>
+            <?php while(($row = $results->fetch_assoc())): ?>
                 <tr>
                     <?php
                         // output the value of each key; the data
@@ -111,25 +111,34 @@
                             }
                         }
 
-                        $index = 0;
-                        echo "<td>"; // The order of teamNames in lastFiveMatches doesn't match the ladder
-                                    //  Therefore the icons doesn't appear correctly. You're getting closer.
-                        foreach($teamsPatterns as $element) {
-                            while(($match = $lastFiveMatches->fetch_assoc()) && ($index < 5)) {
-                                if (preg_match($element, $match["teamName"])) {
-                                    if (intval($match["difference"]) < 0) {
-                                        echo "<img src='images/redcircle.png' alt='Lost' width='20'>";
-                                    }
-                                    elseif (intval($match["difference"]) > 0) {
-                                        echo "<img src='images/greencircle.png' alt='Win' width='20'>";
-                                    }
-                                    else {
-                                        echo "<img src='images/greycircle.png' alt='Draw' width='20'>";
-                                    }
+                        echo "<td>";
+                            // Query to generate the last five matches of each team
+                            $lastFive = "SELECT homeTeam AS id, teamName, matchDate, (score1 - score2) AS difference FROM fixtures, teams";
+                            $lastFive = $lastFive . " WHERE (score1 IS NOT NULL) AND (score2 IS NOT NULL) AND (homeTeam = teamID) AND (homeTeam = ";
+                            $lastFive = $lastFive . $row["teamID"] . ")";
+                            $lastFive = $lastFive . " UNION ALL";
+                            $lastFive = $lastFive . " SELECT awayTeam AS id, teamName, matchDate, (score2 - score1) AS difference FROM fixtures, teams";
+                            $lastFive = $lastFive . " WHERE (score1 IS NOT NULL) AND (score2 IS NOT NULL) AND (awayTeam = teamID) AND (awayTeam = ";
+                            $lastFive = $lastFive . $row["teamID"] . ")";
+                            $lastFive = $lastFive . " ORDER BY id, matchDate DESC";
+                            $lastFive = $lastFive . " LIMIT 5";
+
+                            $lastFiveMatches = $dbConn->query($lastFive)
+                            or die ('Problem with query: ' . $dbConn->error);
+
+                            // The following loop goes through the last five matches to determine the match status
+                            while(($match = $lastFiveMatches->fetch_assoc())) {
+                                // if difference is less than zero, the team has lost
+                                if (intval($match["difference"]) < 0) {
+                                    echo "<img src='images/redcircle.png' alt='Lost' width='20'>";
+                                } // if difference is more than zero, the team has won
+                                elseif (intval($match["difference"]) > 0) {
+                                    echo "<img src='images/greencircle.png' alt='Win' width='20'>";
+                                } // if difference is equal to zero, the has drawn
+                                else {
+                                    echo "<img src='images/greycircle.png' alt='Draw' width='20'>";
                                 }
-                                $index++;
                             }
-                        }
                         echo "</td>";
                     ?>
                 </tr>
