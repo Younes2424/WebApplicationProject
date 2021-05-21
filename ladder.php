@@ -61,8 +61,6 @@
                         elseif ($field->name === "Club") {
                             echo "<th></th>"; // So the logo and team name appear as one column
                         } // Else print the rest of the headings as they are
-                        elseif ($field->name === "teamID") {
-                        }
                         else {
                             echo "<th>" . $field->name . "</th>";
                         }
@@ -73,6 +71,7 @@
             </tr>
             <?php
                 $pattern = "/^[a-zA-Z0-9]*(.png)$/"; // Regular expression for emblems' file names
+                $teamIdPatterns = "/^[1-9]$|^((1)+[0-2])$/"; // Regular expression for teamIDs
             ?>
             <!-- After printing table headings (or adding columns), fill the table with its data -->
             <?php while(($row = $results->fetch_assoc())): ?>
