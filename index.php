@@ -6,8 +6,16 @@
   header("Expires: -1");
   require_once("conn.php");
 
+  function sanitiseInput($data) {
+    // function from https://www.w3schools.com/php/php_form_validation.asp
+    $data = trim($data); // remove spaces, tabs, etc
+    $data = stripslashes($data); // remove backslash
+    $data = htmlspecialchars($data); // converts special characters to their html code
+    return $data;
+  }
+
   if ((isset($_POST["submit"])) && (!empty($_POST["choice"]))) {
-    $choice = $_POST["choice"];
+    $choice = sanitiseInput($_POST["choice"]);
     $_SESSION["weekType"] = $choice;
 
     //set the week number based upon the users choice
