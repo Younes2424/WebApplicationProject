@@ -90,17 +90,17 @@
                         echo "<td>";
                             // Query to generate the last five matches of each team
                             $lastFive = "SELECT homeTeam AS id, teamName, matchDate, (score1 - score2) AS difference FROM fixtures, teams";
-                            $lastFive = $lastFive . " WHERE (score1 IS NOT NULL) AND (score2 IS NOT NULL) AND (homeTeam = teamID) AND (homeTeam = ";
-                            $lastFive = $lastFive . $row["teamID"] . ")";
+                            $lastFive = $lastFive . " WHERE (score1 IS NOT NULL) AND (score2 IS NOT NULL) AND (homeTeam = teamID) AND (homeTeam = ?)";
                             $lastFive = $lastFive . " UNION ALL";
                             $lastFive = $lastFive . " SELECT awayTeam AS id, teamName, matchDate, (score2 - score1) AS difference FROM fixtures, teams";
-                            $lastFive = $lastFive . " WHERE (score1 IS NOT NULL) AND (score2 IS NOT NULL) AND (awayTeam = teamID) AND (awayTeam = ";
-                            $lastFive = $lastFive . $row["teamID"] . ")";
+                            $lastFive = $lastFive . " WHERE (score1 IS NOT NULL) AND (score2 IS NOT NULL) AND (awayTeam = teamID) AND (awayTeam = ?)";
                             $lastFive = $lastFive . " ORDER BY id, matchDate DESC";
                             $lastFive = $lastFive . " LIMIT 5";
 
-                            $lastFiveMatches = $dbConn->query($lastFive)
-                            or die ('Problem with query: ' . $dbConn->error);
+                            $statement = $dbConn->prepare($lastFive);
+                            $statement->bind_param("ss", $row["teamID"], $row["teamID"]);
+                            $statement->execute();
+                            $lastFiveMatches = $statement->get_result();
 
                             // The following loop goes through the last five matches to determine the match status
                             while(($match = $lastFiveMatches->fetch_assoc())) {
