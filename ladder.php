@@ -98,7 +98,7 @@
                             $lastFive = $lastFive . " LIMIT 5";
 
                             $statement = $dbConn->prepare($lastFive);
-                            $statement->bind_param("ss", $row["teamID"], $row["teamID"]);
+                            $statement->bind_param("ii", $row["teamID"], $row["teamID"]);
                             $statement->execute();
                             $lastFiveMatches = $statement->get_result();
 
