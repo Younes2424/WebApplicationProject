@@ -27,17 +27,21 @@
       $statement->bind_param("ss", $today, $today);
       $statement->execute();
       $result = $statement->get_result();
-      $week = $result->fetch_object();
-      $week = $week->weekID;
+      if ($result->num_rows) {
+        $week = $result->fetch_object();
+        $week = $week->weekID;
+        $_SESSION["weekNo"] = $week;
+      }
+      else {
+        echo "<p>The season has ended.</p>";
+      }
     }
     else {
       if (is_numeric($_POST["weekNum"])) {
         $week = $dbConn->escape_string($_POST["weekNum"]);
+        $_SESSION["weekNo"] = $week;
       }
     }
-
-    //set up a session variable here to identify the week
-    $_SESSION["weekNo"] = $week;
   }
 ?>
 
