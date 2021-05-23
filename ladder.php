@@ -3,18 +3,22 @@
     header("Cache-Control: no-cache");
     header("Expires: -1");
     require_once("conn.php");
+
     $tableName = 'teams'; // Table name
     $ladder = array();
     $week = $_SESSION["weekNo"];
+
     $sql = "SET @row_num=0";
     $results = $dbConn->query($sql)
     or die ('Problem with query: ' . $dbConn->error);
+
     $sql = "SELECT teamID, (@row_num:=@row_num+1) '#', emblem, teamName 'Club',
             played 'P', won 'W', drawn 'D', lost 'L', goalsFor 'GF', goalsAgainst 'GA',
             goalDiff 'GD', points AS 'Pts'";
     $sql = $sql . "FROM teams ORDER BY points DESC, goalDiff DESC";
     $results = $dbConn->query($sql)
     or die ('Problem with query: ' . $dbConn->error);
+
     array_push($ladder, array(
         'name' => $tableName, // Table name
         'fields' => $results->fetch_fields(), // Column headings
@@ -73,14 +77,14 @@
                 $pattern = "/^[a-zA-Z0-9]*(.png)$/"; // Regular expression for emblems' file names
             ?>
             <!-- After printing table headings (or adding columns), fill the table with its data -->
-            <?php while(($row = $results->fetch_assoc())): ?>
+            <?php while($row = $results->fetch_assoc()): ?>
                 <tr>
                     <?php
                         // output the value of each key; the data
                         foreach($row as $value) {
                             // If the value matches to the regular expression of the emblem's file name, add emblem's image
                             if (preg_match($pattern, $value)) {
-                                echo "<td><img src='images/" . $value . "' alt='Team Logo' width='25'></td>";
+                                echo "<td><img src='images/" . $value . "' alt='Team's Logo' width='25'></td>";
                             } // else add the value (string) itself to the table
                             else {
                                 echo "<td>" . $value . "</td>";
@@ -103,7 +107,7 @@
                             $lastFiveMatches = $statement->get_result();
 
                             // The following loop goes through the last five matches to determine the match status
-                            while(($match = $lastFiveMatches->fetch_assoc())) {
+                            while($match = $lastFiveMatches->fetch_assoc()) {
                                 // if difference is less than zero, the team has lost
                                 if (intval($match["difference"]) < 0) {
                                     echo "<img src='images/redcircle.png' alt='Lost' width='20'>";
