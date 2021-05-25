@@ -93,30 +93,51 @@
 
                         echo "<td>";
                             // Query to generate the last five matches of each team
-                            $lastFive = "SELECT homeTeam AS id, teamName, matchDate, (score1 - score2) AS difference FROM fixtures, teams";
-                            $lastFive = $lastFive . " WHERE (score1 IS NOT NULL) AND (score2 IS NOT NULL) AND (homeTeam = teamID) AND (homeTeam = ?)";
-                            $lastFive = $lastFive . " UNION ALL";
-                            $lastFive = $lastFive . " SELECT awayTeam AS id, teamName, matchDate, (score2 - score1) AS difference FROM fixtures, teams";
-                            $lastFive = $lastFive . " WHERE (score1 IS NOT NULL) AND (score2 IS NOT NULL) AND (awayTeam = teamID) AND (awayTeam = ?)";
-                            $lastFive = $lastFive . " ORDER BY id, matchDate DESC";
-                            $lastFive = $lastFive . " LIMIT 5";
+                            // $lastFive = "SELECT homeTeam AS id, teamName, matchDate, (score1 - score2) AS difference FROM fixtures, teams";
+                            // $lastFive = $lastFive . " WHERE (score1 IS NOT NULL) AND (score2 IS NOT NULL) AND (homeTeam = teamID) AND (homeTeam = ?)";
+                            // $lastFive = $lastFive . " UNION ALL";
+                            // $lastFive = $lastFive . " SELECT awayTeam AS id, teamName, matchDate, (score2 - score1) AS difference FROM fixtures, teams";
+                            // $lastFive = $lastFive . " WHERE (score1 IS NOT NULL) AND (score2 IS NOT NULL) AND (awayTeam = teamID) AND (awayTeam = ?)";
+                            // $lastFive = $lastFive . " ORDER BY id, matchDate DESC";
+                            // $lastFive = $lastFive . " LIMIT 5";
+
+                            $lastFive = "SELECT * FROM fixtures ";
+                            $lastFive = $lastFive . "WHERE ((awayTeam = ?) OR (homeTeam = ?)) AND ((matchDate <= NOW()) AND (score1 IS NOT NULL)) ";
+                            $lastFive = $lastFive . " ORDER BY matchDate DESC LIMIT 5";
 
                             $statement = $dbConn->prepare($lastFive);
                             $statement->bind_param("ii", $row["teamID"], $row["teamID"]);
                             $statement->execute();
                             $lastFiveMatches = $statement->get_result();
-
+                            // print_r($lastFiveMatches->fetch_all()); exit();
+                            // print_r($lastFiveMatches->fetch_all(MYSQLI_ASSOC)); exit();
                             // The following loop goes through the last five matches to determine the match status
                             while($match = $lastFiveMatches->fetch_assoc()) {
-                                // if difference is less than zero, the team has lost
-                                if (intval($match["difference"]) < 0) {
-                                    echo "<img src='images/redcircle.png' alt='Lost' width='20'>";
-                                } // if difference is more than zero, the team has won
-                                elseif (intval($match["difference"]) > 0) {
-                                    echo "<img src='images/greencircle.png' alt='Win' width='20'>";
-                                } // if difference is equal to zero, the has drawn
-                                else {
-                                    echo "<img src='images/greycircle.png' alt='Draw' width='20'>";
+                                if ($match["homeTeam"] == $row["teamID"]) {
+                                    $difference = $match["score1"] - $match["score2"];
+                                    // if difference is less than zero, the team has lost
+                                    if (intval($difference) < 0) {
+                                        echo "<img src='images/redcircle.png' alt='Lost' width='20'>";
+                                    } // if difference is more than zero, the team has won
+                                    elseif (intval($difference) > 0) {
+                                        echo "<img src='images/greencircle.png' alt='Win' width='20'>";
+                                    } // if difference is equal to zero, the has drawn
+                                    else {
+                                        echo "<img src='images/greycircle.png' alt='Draw' width='20'>";
+                                    }
+                                }
+                                elseif ($match["awayTeam"] == $row["teamID"]) {
+                                    $difference = $match["score2"] - $match["score1"];
+                                    // if difference is less than zero, the team has lost
+                                    if (intval($difference) < 0) {
+                                        echo "<img src='images/redcircle.png' alt='Lost' width='20'>";
+                                    } // if difference is more than zero, the team has won
+                                    elseif (intval($difference) > 0) {
+                                        echo "<img src='images/greencircle.png' alt='Win' width='20'>";
+                                    } // if difference is equal to zero, the has drawn
+                                    else {
+                                        echo "<img src='images/greycircle.png' alt='Draw' width='20'>";
+                                    }
                                 }
                             }
                         echo "</td>";
@@ -125,5 +146,6 @@
             <?php endwhile; ?>
         </table>
     <?php endforeach; ?>
+    <?php $dbConn->close(); ?>
 </body>
 </html>
